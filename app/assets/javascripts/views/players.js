@@ -16,12 +16,12 @@ $(".players.index").ready(function(){
 
   app.PlayersView = Backbone.View.extend({
 
-  	el:"#players",
+    el:"#players",
 
     events: {
-        'click .btn_hide' : 'onHidePlayer'
+        'click .btn_hide, .btn_show' : 'onHidePlayer'
       },
-
+    
     /*
     Input params:
     * players: the list of player objects
@@ -29,8 +29,8 @@ $(".players.index").ready(function(){
     * play_video_by_video_id_and_time: a function callback
     **/
     initialize: function(inp) {
-		console.log("Started RecordingTagControl initialize with input: %o", inp);
-		this.players=inp.players;
+    console.log("Started RecordingTagControl initialize with input: %o", inp);
+    this.players=inp.players;
         this.list_template=HandlebarsTemplates["players"];//uses the fila assets/javascripts/templates/players.hbs
         this.initHandleBarsHelpers();
         this.render();
@@ -40,17 +40,43 @@ $(".players.index").ready(function(){
     {
       Handlebars.registerHelper('I18n',
         function(str){
+          console.log(str);
           return (I18n != undefined ? I18n.t(str) : str);
+
         }
       );
     },
 
     onHidePlayer:function(evt)
     {
-        console.log("Clicked on .hide, elem: %o", evt.target);
-        $(evt.target).parent().parent().fadeOut();
-    },
+        console.log("Clicked on .hide/ .show, elem: %o", evt.target);
+        console.log($(evt.target).parent()); //td
+        console.log("logo::  " +$(evt.target).hasClass('btn_show')); //button.btn.btn-default.btn_hide
+        console.log($(evt.target));
+        console.log(this.players[0].logo);
+        
+        if ($(evt.target).hasClass('btn_show')){
+          console.log("see");
+          var x = $(evt.target).parent();
+          var y = $(evt.target).parent().parent();
+          var row = document.createElement("td");
+          row.innerHTML = "<img src = \"" +gon.players[x[0].id].logo + "\" style='height:33px; width:100px;'></img>";
+          //$(evt.target).parent().appendChild(row);
+          y[0].appendChild(row);
 
+        }else{
+          $(evt.target).parent().parent().fadeOut();
+        }
+        // var row = document.createElement("td");
+        // row.innerHTML = model.get("logo");
+        // $(evt.target).parent().appendChild(row);
+        
+    },
+    onShowPlayer:function(evt)
+    {
+        console.log("Clicked on .show", evt.target);
+        window.alert("show Clicked");
+    },
     render:function()
     {
         $(this.el).html(this.list_template(this.players));
