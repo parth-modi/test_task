@@ -40,7 +40,7 @@ $(".players.index").ready(function(){
     {
       Handlebars.registerHelper('I18n',
         function(str){
-          console.log(str);
+          
           return (I18n != undefined ? I18n.t(str) : str);
 
         }
@@ -50,19 +50,24 @@ $(".players.index").ready(function(){
     onHidePlayer:function(evt)
     {
         console.log("Clicked on .hide/ .show, elem: %o", evt.target);
-        console.log($(evt.target).parent()); //td
-        console.log("logo::  " +$(evt.target).hasClass('btn_show')); //button.btn.btn-default.btn_hide
-        console.log($(evt.target));
-        console.log(this.players[0].logo);
+        // console.log($(evt.target).parent()); //td
+        // console.log("logo::  " +$(evt.target).hasClass('btn_show')); //button.btn.btn-default.btn_hide
+        // console.log($(evt.target));
+        // console.log(this.players[0].logo);
         
         if ($(evt.target).hasClass('btn_show')){
-          console.log("see");
+          //console.log("see");
           var x = $(evt.target).parent();
-          var y = $(evt.target).parent().parent();
-          var row = document.createElement("td");
-          row.innerHTML = "<img src = \"" +gon.players[x[0].id].logo + "\" style='height:33px; width:100px;'></img>";
-          //$(evt.target).parent().appendChild(row);
-          y[0].appendChild(row);
+          //console.log("tddddd");
+          var temp = x.next();
+          //console.log(temp[0]);
+          // var y = $(evt.target).parent().parent();
+          // var row = document.createElement("td");
+          // row.innerHTML = "<img src = \"" +gon.players[x[0].id].logo + "\" style='height:33px; width:100px;'></img>";
+          //y[0].appendChild(row); //last working
+          
+          
+          temp[0].innerHTML = "<img src = \"" +gon.players[x[0].id].logo + "\" style='height:33px; width:100px;'></img>";
 
         }else{
           $(evt.target).parent().parent().fadeOut();
@@ -71,11 +76,6 @@ $(".players.index").ready(function(){
         // row.innerHTML = model.get("logo");
         // $(evt.target).parent().appendChild(row);
         
-    },
-    onShowPlayer:function(evt)
-    {
-        console.log("Clicked on .show", evt.target);
-        window.alert("show Clicked");
     },
     render:function()
     {

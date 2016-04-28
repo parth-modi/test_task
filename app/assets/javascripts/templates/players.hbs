@@ -5,16 +5,19 @@
   <th>Name </th>
   <th>Email </th>
   <th>Action</th>
+  <th>Logo </th>
   </tr>
   {{#each this}}
   <tr>
     <td class="player">{{id}}</td>
     <td class="player">{{name}}</td>
     <td class="player">{{email}}</td>
+
     <td id = {{id}}>
       <button class="btn btn-default btn_hide" >{{I18n "hide"}}</button>
       <button class="btn btn-default btn_show" >{{I18n "show"}}</button>
     </td>
+    <td width="110px"></td>
   </tr>
   {{/each}}
 
