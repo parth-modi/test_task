@@ -14,23 +14,233 @@ In order to set it up, you will probably like to setup rvm first.
 === 1. Handlebars
 
 * Where are the handlebar templates stored?
+- app/assets/javascripts/templates/-players.hbs
+
 * How are they used?
+-Use .hbs to compile the template with Handlebars.
+	1. Compile the Handlebars template to JavaScript code
+	2. Add the template code to the HandlebarsTemplates global under the name players
+	You can then invoke the resulting template in your application's JavaScript
+	NOTE: There will be no javascript object HandlebarsTemplates unless at least ONE template is included.
+	HandlebarsTemplates['players'];
+	
+	After above setup, we write our  view in players.hbs file, this creates a template for presenting players information.
+	This template is then invoked by adding:
+		> this.list_template=HandlebarsTemplates["players"]; < into players.js initializer
+		Initializer is given players array as input, which is generated in players_controller's index action,
+		which in turn calls generatePlayers() method to generate players.
+
+
 * Why isnt it possible to inject rails-variables such as <%= @player.name %> ?
+- Because template is for view file is generated using handlebars. players.hbs accepts players list as parameter in players.js.
+- The playes.js gets values of players generated in players_controller's index action using gon gem.
+
 
 === 2. I18n
 
 * How is I18n used?
+  gem 'i18n-js' is used.
+	in application.html.erb --> 
+	<%= javascript_include_tag "i18n" %>
+	<%= javascript_include_tag "translations" %>
+
+	in i18n-js.yaml, 
+	////////////////////////////////////////////////////////////
+	fallbacks: :de
+
+	translations:
+	- file: "public/javascripts/i18n/%{locale}.js"
+	  only: '*'
+	////////////////////////////////////////////////////////////
+
+	Here, the specified locale :de will be used as fallback for all locales.
+
+	in config/locales >>
+		{locale}.yaml and en.yml is written.
+		For each language it priovides localization as per arguments, if we want a specific translations then we should pass a lang, e.g. 'en' or 'de'.
+
+
 * How is it integrated into the handlebars templates?
+- Adding {{i18n "show"}} in players.hbs => this will produce 'Show me' as output.
+	This will load from {locale}.js file. we have to specify key pair values.
 
 
 === 3. Backbone-js
 
 * Where are the backbone-js views located?
+- app/assets/javascripts/backbone/views
+
 * How is the class definition separated from the initialization?
+- initialize: a function that will be called when the view is first created.
+- render: a function that will render the view template from model data(in our case, from gon).
+
 * How does the $(".players.index").ready(...) work?
+- inside application.html.erb >>> 
+<body class="<%= controller_name %> <%= action_name %>"> 
+above line passes current controller_name and action_name in class.
+Due to this we can get .players .index inside $(“.players.index”) to invoke controller's action specific javascript.
+
 
 === 4. Add a logo 
 
 Please extend the players table by the logo. Add a button to the right of "hide me" and call it "show". When the user clicks on the "show" button, display the logo inside a new "td" element of the "tr" table row.
 
+Please extend the players table by the logo. Add a button to the right of “hide me” and call it “show”. When the user clicks on the “show” button, display the logo inside a new “td” element of the “tr” table row.
+
+- DONE(code is as below in specified files)
+players.hbs
+............................................................................
+<table class="table table-striped table-condensed">
+
+<tr>
+  <th>ID </th>
+  <th>Name </th>
+  <th>Email </th>
+  <th>Action</th>
+  </tr>
+  {{#each this}}
+
+  <tr>
+  <!-- <td class="player"><img src="{{logo}}"></td> -->
+    <td class="player">{{id}}</td>
+    <td class="player">{{name}}</td>
+    <td class="player">{{email}}</td>
+    <td id = {{id}}>
+      <button class="btn btn-default btn_hide" >{{I18n "hide"}}</button>
+      <button class="btn btn-default btn_show" >{{I18n "show"}}</button>
+    </td>
+  </tr>
+  {{/each}}
+
+</table>
+
+
+
+players.js
+.................................................................
+
+
+  var app = app || {};
+
+
+//Init the view using the readyselector module 
+//http://brandonhilkert.com/blog/page-specific-javascript-in-rails/
+$(".players.index").ready(function(){
+  console.log("Creating players index view");
+  app.players_index=new app.PlayersView({players:gon.players});
+});
+
+
+
+(function ($) {
+  'use strict';
+
+
+  app.PlayersView = Backbone.View.extend({
+
+  	el:"#players",
+
+    events: {
+        'click .btn_hide, .btn_show' : 'onHidePlayer'
+      },
+    
+    /*
+    Input params:
+    * players: the list of player objects
+    * tags_bundle: Array of all tags in the recording over all videos.
+    * play_video_by_video_id_and_time: a function callback
+    **/
+    initialize: function(inp) {
+		console.log("Started RecordingTagControl initialize with input: %o", inp);
+		this.players=inp.players;
+        this.list_template=HandlebarsTemplates["players"];//uses the fila assets/javascripts/templates/players.hbs
+        this.initHandleBarsHelpers();
+        this.render();
+    },
+
+    initHandleBarsHelpers:function()
+    {
+      Handlebars.registerHelper('I18n',
+        function(str){
+          console.log(str);
+          return (I18n != undefined ? I18n.t(str) : str);
+
+        }
+      );
+    },
+
+    onHidePlayer:function(evt)
+    {
+        console.log("Clicked on .hide/ .show, elem: %o", evt.target);
+        console.log($(evt.target).parent()); //td
+        console.log("logo::  " +$(evt.target).hasClass('btn_show')); //button.btn.btn-default.btn_hide
+        console.log($(evt.target));
+        console.log(this.players[0].logo);
+        
+        if ($(evt.target).hasClass('btn_show')){
+          console.log("see");
+          var x = $(evt.target).parent();
+          var y = $(evt.target).parent().parent();
+          var row = document.createElement("td");
+          row.innerHTML = "<img src = \"" +gon.players[x[0].id].logo + "\" style='height:33px; width:100px;'></img>";
+          //$(evt.target).parent().appendChild(row);
+          y[0].appendChild(row);
+
+        }else{
+          $(evt.target).parent().parent().fadeOut();
+        }
+        // var row = document.createElement("td");
+        // row.innerHTML = model.get("logo");
+        // $(evt.target).parent().appendChild(row);
+        
+    },
+    onShowPlayer:function(evt)
+    {
+        console.log("Clicked on .show", evt.target);
+        window.alert("show Clicked");
+    },
+    render:function()
+    {
+        $(this.el).html(this.list_template(this.players));
+    }
+
+
+  });
+})(jQuery);
+
+
+
+
+
+players_controller.js
+...............................................
+class PlayersController < ApplicationController
+
+	def index
+		gon.players=generatePlayers()
+	end
+
+
+private
+
+  #generats some faker player data
+  def generatePlayers()
+    puts "generatePlayers"
+  	res=[]
+  	(1..20).each do |i|
+  		#obj={name:Faker::Name.name, email:Faker::Internet.email, logo:Faker::Company.logo, description:Faker::Lorem.sentence}
+  		
+      obj={id: i,name:Faker::Name.name, email:Faker::Internet.email, logo:Faker::Company.logo, description:Faker::Lorem.sentence}
+
+      res << obj
+      puts "generatePlayers:: #{obj.inspect}"
+  	end
+  	return res
+  end
+end
+
+
+readyselector.js
+..................................
+-no change in contents
 
